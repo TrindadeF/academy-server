@@ -1,0 +1,30 @@
+#!/bin/bash
+
+echo "🚀 Starting Academy Server Setup..."
+
+# Check if .env exists
+if [ ! -f .env ]; then
+    echo "📝 Creating .env file from .env.example..."
+    cp .env.example .env
+    echo "✅ .env file created. Please update it with your configurations."
+else
+    echo "✅ .env file already exists."
+fi
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+npm install
+
+# Generate Prisma Client
+echo "🔧 Generating Prisma Client..."
+npm run prisma:generate
+
+# Run migrations
+echo "🗄️  Running database migrations..."
+npm run prisma:migrate
+
+# Seed database
+echo "🌱 Seeding database with initial data..."
+npm run prisma:seed
+
+echo "✨ Setup complete! You can now run 'npm run dev' to start the server."

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: academy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: academy
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - academy-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: academy-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/academy?schema=public
+      PORT: 3333
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-your-super-secret-refresh-token-key-change-this}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
+      COOKIE_SECRET: ${COOKIE_SECRET:-your-super-secret-cookie-key-change-this-in-production}
+    ports:
+      - "3333:3333"
+    depends_on:
+      - postgres
+    networks:
+      - academy-network
+    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+
+volumes:
+  postgres_data:
+
+networks:
+  academy-network:
+    driver: bridge
